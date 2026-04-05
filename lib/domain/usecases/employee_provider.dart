@@ -14,16 +14,13 @@ final employeeRepositoryProvider = Provider<EmployeeRepository>((ref) {
   );
 });
 
-final employeeProvider = FutureProvider.family<Employee, String>((
-  ref,
-  id,
-) async {
+final employeeProvider = FutureProvider.family<Employee, int>((ref, id) async {
   final repository = ref.watch(employeeRepositoryProvider);
   return repository.getEmployeeById(id);
 });
 
 final employeeDirectReportsProvider =
-    FutureProvider.family<List<Employee>, String>((ref, managerId) async {
+    FutureProvider.family<List<Employee>, int>((ref, managerId) async {
       final repository = ref.watch(employeeRepositoryProvider);
       return repository.getDirectReports(managerId);
     });

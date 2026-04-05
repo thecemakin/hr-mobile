@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'department.dart';
+import 'position.dart';
 
 class Employee extends Equatable {
-  final String id;
+  final int id;
   final String? employeeNumber;
   final String firstName;
   final String lastName;
@@ -9,15 +11,28 @@ class Employee extends Equatable {
   final String? phone;
   final DateTime? dateOfBirth;
   final String? gender;
-  final Address? address;
-  final EmergencyContact? emergencyContact;
-  final BankInfo? bankInfo;
+  final String? addressLine1;
+  final String? addressLine2;
+  final String? city;
+  final String? state;
+  final String? postalCode;
+  final String? country;
+  final String? emergencyContactName;
+  final String? emergencyContactPhone;
+  final String? emergencyContactRelation;
+  final String? bankAccountNumber;
+  final String? bankName;
+  final String? bankRoutingNumber;
+  final int? departmentId;
   final Department? department;
+  final int? positionId;
   final Position? position;
   final DateTime? hireDate;
-  final String? managerId;
+  final int? managerId;
   final Employee? manager;
+  final List<Employee>? subordinates;
   final String? status;
+  final DateTime? terminationDate;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -30,62 +45,76 @@ class Employee extends Equatable {
     this.phone,
     this.dateOfBirth,
     this.gender,
-    this.address,
-    this.emergencyContact,
-    this.bankInfo,
+    this.addressLine1,
+    this.addressLine2,
+    this.city,
+    this.state,
+    this.postalCode,
+    this.country,
+    this.emergencyContactName,
+    this.emergencyContactPhone,
+    this.emergencyContactRelation,
+    this.bankAccountNumber,
+    this.bankName,
+    this.bankRoutingNumber,
+    this.departmentId,
     this.department,
+    this.positionId,
     this.position,
     this.hireDate,
     this.managerId,
     this.manager,
+    this.subordinates,
     this.status,
+    this.terminationDate,
     this.createdAt,
     this.updatedAt,
   });
 
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
-      id: json['id']?.toString() ?? '',
-      employeeNumber: json['employee_number']?.toString(),
+      id: _toInt(json['id']) ?? 0,
+      employeeNumber: json['employee_number'] as String?,
       firstName: json['first_name'] as String? ?? '',
       lastName: json['last_name'] as String? ?? '',
       email: json['email'] as String?,
       phone: json['phone'] as String?,
-      dateOfBirth: json['date_of_birth'] != null
-          ? DateTime.parse(json['date_of_birth'].toString())
-          : null,
+      dateOfBirth: _parseDate(json['date_of_birth']),
       gender: json['gender'] as String?,
-      address: json['address'] != null
-          ? Address.fromJson(json['address'] as Map<String, dynamic>)
-          : null,
-      emergencyContact: json['emergency_contact'] != null
-          ? EmergencyContact.fromJson(
-              json['emergency_contact'] as Map<String, dynamic>,
-            )
-          : null,
-      bankInfo: json['bank_info'] != null
-          ? BankInfo.fromJson(json['bank_info'] as Map<String, dynamic>)
-          : null,
+      addressLine1: json['address_line1'] as String?,
+      addressLine2: json['address_line2'] as String?,
+      city: json['city'] as String?,
+      state: json['state'] as String?,
+      postalCode: json['postal_code'] as String?,
+      country: json['country'] as String?,
+      emergencyContactName: json['emergency_contact_name'] as String?,
+      emergencyContactPhone: json['emergency_contact_phone'] as String?,
+      emergencyContactRelation: json['emergency_contact_relation'] as String?,
+      bankAccountNumber: json['bank_account_number'] as String?,
+      bankName: json['bank_name'] as String?,
+      bankRoutingNumber: json['bank_routing_number'] as String?,
+      departmentId: _toInt(json['department_id']),
       department: json['department'] != null
           ? Department.fromJson(json['department'] as Map<String, dynamic>)
           : null,
+      positionId: _toInt(json['position_id']),
       position: json['position'] != null
           ? Position.fromJson(json['position'] as Map<String, dynamic>)
           : null,
-      hireDate: json['hire_date'] != null
-          ? DateTime.parse(json['hire_date'].toString())
-          : null,
-      managerId: json['manager_id']?.toString(),
+      hireDate: _parseDate(json['hire_date']),
+      managerId: _toInt(json['manager_id']),
       manager: json['manager'] != null
           ? Employee.fromJson(json['manager'] as Map<String, dynamic>)
           : null,
+      subordinates: json['subordinates'] is List
+          ? (json['subordinates'] as List)
+                .map((e) => Employee.fromJson(e as Map<String, dynamic>))
+                .toList()
+          : null,
       status: json['status'] as String?,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'].toString())
-          : null,
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'].toString())
-          : null,
+      terminationDate: _parseDate(json['termination_date']),
+      createdAt: _parseDate(json['created_at']),
+      updatedAt: _parseDate(json['updated_at']),
     );
   }
 
@@ -99,15 +128,28 @@ class Employee extends Equatable {
       'phone': phone,
       'date_of_birth': dateOfBirth?.toIso8601String(),
       'gender': gender,
-      'address': address?.toJson(),
-      'emergency_contact': emergencyContact?.toJson(),
-      'bank_info': bankInfo?.toJson(),
+      'address_line1': addressLine1,
+      'address_line2': addressLine2,
+      'city': city,
+      'state': state,
+      'postal_code': postalCode,
+      'country': country,
+      'emergency_contact_name': emergencyContactName,
+      'emergency_contact_phone': emergencyContactPhone,
+      'emergency_contact_relation': emergencyContactRelation,
+      'bank_account_number': bankAccountNumber,
+      'bank_name': bankName,
+      'bank_routing_number': bankRoutingNumber,
+      'department_id': departmentId,
       'department': department?.toJson(),
+      'position_id': positionId,
       'position': position?.toJson(),
       'hire_date': hireDate?.toIso8601String(),
       'manager_id': managerId,
       'manager': manager?.toJson(),
+      'subordinates': subordinates?.map((e) => e.toJson()).toList(),
       'status': status,
+      'termination_date': terminationDate?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -115,237 +157,33 @@ class Employee extends Equatable {
 
   String get fullName => '$firstName $lastName';
 
-  Employee copyWith({
-    String? id,
-    String? employeeNumber,
-    String? firstName,
-    String? lastName,
-    String? email,
-    String? phone,
-    DateTime? dateOfBirth,
-    String? gender,
-    Address? address,
-    EmergencyContact? emergencyContact,
-    BankInfo? bankInfo,
-    Department? department,
-    Position? position,
-    DateTime? hireDate,
-    String? managerId,
-    Employee? manager,
-    String? status,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Employee(
-      id: id ?? this.id,
-      employeeNumber: employeeNumber ?? this.employeeNumber,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
-      gender: gender ?? this.gender,
-      address: address ?? this.address,
-      emergencyContact: emergencyContact ?? this.emergencyContact,
-      bankInfo: bankInfo ?? this.bankInfo,
-      department: department ?? this.department,
-      position: position ?? this.position,
-      hireDate: hireDate ?? this.hireDate,
-      managerId: managerId ?? this.managerId,
-      manager: manager ?? this.manager,
-      status: status ?? this.status,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
+  String get fullAddress {
+    final parts = [
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      postalCode,
+      country,
+    ].where((e) => e != null && e.isNotEmpty).toList();
+    return parts.join(', ');
   }
 
   @override
   List<Object?> get props => [id];
-}
 
-class Address extends Equatable {
-  final String? line1;
-  final String? line2;
-  final String? city;
-  final String? state;
-  final String? postalCode;
-  final String? country;
-
-  const Address({
-    this.line1,
-    this.line2,
-    this.city,
-    this.state,
-    this.postalCode,
-    this.country,
-  });
-
-  factory Address.fromJson(Map<String, dynamic> json) {
-    return Address(
-      line1: json['line1'] as String?,
-      line2: json['line2'] as String?,
-      city: json['city'] as String?,
-      state: json['state'] as String?,
-      postalCode: json['postal_code']?.toString(),
-      country: json['country'] as String?,
-    );
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is String) return int.tryParse(v);
+    if (v is num) return v.toInt();
+    return null;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'line1': line1,
-      'line2': line2,
-      'city': city,
-      'state': state,
-      'postal_code': postalCode,
-      'country': country,
-    };
+  static DateTime? _parseDate(dynamic v) {
+    if (v == null) return null;
+    final s = v.toString();
+    if (s.isEmpty || s == '0001-01-01T00:00:00Z') return null;
+    return DateTime.tryParse(s);
   }
-
-  @override
-  List<Object?> get props => [];
-}
-
-class EmergencyContact extends Equatable {
-  final String? fullName;
-  final String? phone;
-  final String? relationship;
-
-  const EmergencyContact({this.fullName, this.phone, this.relationship});
-
-  factory EmergencyContact.fromJson(Map<String, dynamic> json) {
-    return EmergencyContact(
-      fullName: json['full_name']?.toString(),
-      phone: json['phone']?.toString(),
-      relationship: json['relationship'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'full_name': fullName,
-      'phone': phone,
-      'relationship': relationship,
-    };
-  }
-
-  @override
-  List<Object?> get props => [];
-}
-
-class BankInfo extends Equatable {
-  final String? accountNumber;
-  final String? bankName;
-  final String? routingNumber;
-
-  const BankInfo({this.accountNumber, this.bankName, this.routingNumber});
-
-  factory BankInfo.fromJson(Map<String, dynamic> json) {
-    return BankInfo(
-      accountNumber: json['account_number']?.toString(),
-      bankName: json['bank_name']?.toString(),
-      routingNumber: json['routing_number']?.toString(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'account_number': accountNumber,
-      'bank_name': bankName,
-      'routing_number': routingNumber,
-    };
-  }
-
-  @override
-  List<Object?> get props => [];
-}
-
-class Department extends Equatable {
-  final String id;
-  final String name;
-  final String? description;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  const Department({
-    required this.id,
-    required this.name,
-    this.description,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory Department.fromJson(Map<String, dynamic> json) {
-    return Department(
-      id: json['id']?.toString() ?? '',
-      name: json['name'] as String? ?? '',
-      description: json['description'] as String?,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'].toString())
-          : null,
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'].toString())
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-    };
-  }
-
-  @override
-  List<Object?> get props => [id];
-}
-
-class Position extends Equatable {
-  final String id;
-  final String title;
-  final String? description;
-  final String? departmentId;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  const Position({
-    required this.id,
-    required this.title,
-    this.description,
-    this.departmentId,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory Position.fromJson(Map<String, dynamic> json) {
-    return Position(
-      id: json['id']?.toString() ?? '',
-      title: json['title'] as String? ?? '',
-      description: json['description'] as String?,
-      departmentId: json['department_id']?.toString(),
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'].toString())
-          : null,
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'].toString())
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'department_id': departmentId,
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-    };
-  }
-
-  @override
-  List<Object?> get props => [id];
 }

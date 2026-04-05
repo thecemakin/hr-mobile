@@ -23,29 +23,24 @@ class OrganizationService {
         throw Exception('Organizasyon verisi boş');
       }
 
-      // Parse all nodes from the list
       final List<OrganizationNode> allNodes = data
           .map((e) => OrganizationNode.fromJson(e as Map<String, dynamic>))
           .toList();
 
-      // Find root nodes (nodes without a parent or with null parentId)
       final List<OrganizationNode> rootNodes = allNodes
-          .where((node) => node.parentId == null || node.parentId!.isEmpty)
+          .where((node) => node.parentId == null)
           .toList();
 
       if (rootNodes.isEmpty) {
-        // If no root nodes found, use the first node as root
         rootNodes.add(allNodes.first);
       }
 
-      // If there's only one root, return it directly
       if (rootNodes.length == 1) {
         return rootNodes.first;
       }
 
-      // If multiple roots, create a virtual root node
       return OrganizationNode(
-        id: 'root',
+        id: 0,
         name: 'Organizasyon',
         type: 'root',
         children: rootNodes,

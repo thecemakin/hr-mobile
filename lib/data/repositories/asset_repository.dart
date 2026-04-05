@@ -8,7 +8,7 @@ class AssetRepository {
     : _assetService = assetService;
 
   Future<List<AssetAssignment>> getMyAssignments({
-    required String employeeId,
+    required int employeeId,
     String? status,
   }) {
     return _assetService.getMyAssignments(
@@ -17,7 +17,7 @@ class AssetRepository {
     );
   }
 
-  Future<Asset> getAssetById(String id) {
+  Future<Asset> getAssetById(int id) {
     return _assetService.getAssetById(id);
   }
 }

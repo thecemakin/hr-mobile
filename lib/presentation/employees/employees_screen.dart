@@ -11,9 +11,9 @@ class EmployeesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final userId = authState.userId;
+    final userIdStr = authState.userId;
 
-    if (userId == null || userId.isEmpty) {
+    if (userIdStr == null || userIdStr.isEmpty) {
       return const Scaffold(
         body: Center(
           child: Column(
@@ -22,15 +22,15 @@ class EmployeesScreen extends ConsumerWidget {
               Icon(Icons.error_outline, size: 48, color: Colors.red),
               SizedBox(height: 16),
               Text('Kullanıcı bilgisi bulunamadı'),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: null, // Will be handled by retry
-                child: Text('Giriş Yap'),
-              ),
             ],
           ),
         ),
       );
+    }
+
+    final userId = int.tryParse(userIdStr);
+    if (userId == null) {
+      return const Scaffold(body: Center(child: Text('Geçersiz kullanıcı ID')));
     }
 
     final employeeAsync = ref.watch(employeeProvider(userId));
@@ -64,12 +64,28 @@ class _ProfileContent extends StatelessWidget {
   final Employee employee;
   const _ProfileContent({required this.employee});
 
+  bool get hasAddress =>
+      employee.addressLine1 != null ||
+      employee.addressLine2 != null ||
+      employee.city != null ||
+      employee.state != null ||
+      employee.postalCode != null ||
+      employee.country != null;
+
+  bool get hasEmergencyContact =>
+      employee.emergencyContactName != null ||
+      employee.emergencyContactPhone != null ||
+      employee.emergencyContactRelation != null;
+
+  bool get hasBankInfo =>
+      employee.bankName != null ||
+      employee.bankAccountNumber != null ||
+      employee.bankRoutingNumber != null;
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () async {
-        // Provider refresh will be handled by parent
-      },
+      onRefresh: () async {},
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
@@ -97,27 +113,24 @@ class _ProfileContent extends StatelessWidget {
                 _buildInfoRow('Durum', _statusLabel(employee.status)),
               ],
             ),
-            if (employee.address != null) ...[
+            if (hasAddress) ...[
               const SizedBox(height: 24),
               _buildSection(
                 title: 'Adres Bilgileri',
                 icon: Icons.location_on_outlined,
                 children: [
-                  if (employee.address!.line1 != null)
-                    _buildInfoRow('Adres', employee.address!.line1!),
-                  if (employee.address!.line2 != null)
-                    _buildInfoRow('Adres (Devam)', employee.address!.line2!),
-                  _buildInfoRow('Şehir', employee.address!.city ?? '-'),
-                  _buildInfoRow('Eyalet', employee.address!.state ?? '-'),
-                  _buildInfoRow(
-                    'Posta Kodu',
-                    employee.address!.postalCode ?? '-',
-                  ),
-                  _buildInfoRow('Ülke', employee.address!.country ?? '-'),
+                  if (employee.addressLine1 != null)
+                    _buildInfoRow('Adres', employee.addressLine1!),
+                  if (employee.addressLine2 != null)
+                    _buildInfoRow('Adres (Devam)', employee.addressLine2!),
+                  _buildInfoRow('Şehir', employee.city ?? '-'),
+                  _buildInfoRow('Eyalet', employee.state ?? '-'),
+                  _buildInfoRow('Posta Kodu', employee.postalCode ?? '-'),
+                  _buildInfoRow('Ülke', employee.country ?? '-'),
                 ],
               ),
             ],
-            if (employee.emergencyContact != null) ...[
+            if (hasEmergencyContact) ...[
               const SizedBox(height: 24),
               _buildSection(
                 title: 'Acil Durum Kişisi',
@@ -125,33 +138,30 @@ class _ProfileContent extends StatelessWidget {
                 children: [
                   _buildInfoRow(
                     'Ad Soyad',
-                    employee.emergencyContact!.fullName ?? '-',
+                    employee.emergencyContactName ?? '-',
                   ),
                   _buildInfoRow(
                     'Telefon',
-                    employee.emergencyContact!.phone ?? '-',
+                    employee.emergencyContactPhone ?? '-',
                   ),
                   _buildInfoRow(
                     'İlişki',
-                    employee.emergencyContact!.relationship ?? '-',
+                    employee.emergencyContactRelation ?? '-',
                   ),
                 ],
               ),
             ],
-            if (employee.bankInfo != null) ...[
+            if (hasBankInfo) ...[
               const SizedBox(height: 24),
               _buildSection(
                 title: 'Banka Bilgileri',
                 icon: Icons.account_balance_outlined,
                 children: [
-                  _buildInfoRow('Banka', employee.bankInfo!.bankName ?? '-'),
-                  _buildInfoRow(
-                    'Hesap No',
-                    employee.bankInfo!.accountNumber ?? '-',
-                  ),
+                  _buildInfoRow('Banka', employee.bankName ?? '-'),
+                  _buildInfoRow('Hesap No', employee.bankAccountNumber ?? '-'),
                   _buildInfoRow(
                     'Routing No',
-                    employee.bankInfo!.routingNumber ?? '-',
+                    employee.bankRoutingNumber ?? '-',
                   ),
                 ],
               ),
@@ -187,7 +197,7 @@ class _ProfileContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${employee.firstName} ${employee.lastName}',
+                    employee.fullName,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -271,6 +281,8 @@ class _ProfileContent extends StatelessWidget {
         return 'Aktif';
       case 'inactive':
         return 'Pasif';
+      case 'terminated':
+        return 'İşten Çıkarıldı';
       case 'on_leave':
         return 'İzinde';
       default:

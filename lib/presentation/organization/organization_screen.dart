@@ -63,40 +63,18 @@ class _OrgTreeTab extends ConsumerWidget {
       child: treeAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
-          child: Scrollbar(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Organizasyon ağacı yüklenirken hata oluştu',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SelectableText(
-                      error.toString(),
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () => ref.invalidate(organizationTreeProvider),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Tekrar Dene'),
-                  ),
-                ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Hata: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(organizationTreeProvider),
+                child: const Text('Tekrar Dene'),
               ),
-            ),
+            ],
           ),
         ),
         data: (tree) => _OrganizationTreeView(root: tree),
@@ -114,7 +92,7 @@ class _OrganizationTreeView extends StatefulWidget {
 }
 
 class _OrganizationTreeViewState extends State<_OrganizationTreeView> {
-  final Set<String> _expandedNodes = {};
+  final Set<int> _expandedNodes = {};
 
   @override
   Widget build(BuildContext context) {
@@ -122,35 +100,9 @@ class _OrganizationTreeViewState extends State<_OrganizationTreeView> {
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Debug info: Show node count
-          Text(
-            'Toplam ${_countNodes(widget.root)} düğüm',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Build all root nodes (if there are multiple)
-          ..._buildRootNodes(),
-        ],
+        children: [_buildNode(widget.root, 0)],
       ),
     );
-  }
-
-  int _countNodes(OrganizationNode node) {
-    return 1 + node.children.map(_countNodes).fold(0, (a, b) => a + b);
-  }
-
-  List<Widget> _buildRootNodes() {
-    // If the root is a virtual root with type 'root', show all its children
-    if (widget.root.type == 'root') {
-      return widget.root.children.map((child) => _buildNode(child, 0)).toList();
-    }
-    // Otherwise, just show the single root node
-    return [_buildNode(widget.root, 0)];
   }
 
   Widget _buildNode(OrganizationNode node, int depth) {
@@ -253,20 +205,9 @@ class _MyTeamTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    final userId = authState.userId;
-
-    if (userId == null || userId.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red),
-            SizedBox(height: 16),
-            Text('Kullanıcı bilgisi bulunamadı'),
-          ],
-        ),
-      );
+    final userId = _getUserId(ref);
+    if (userId == null) {
+      return const Center(child: Text('Kullanıcı bilgisi bulunamadı'));
     }
 
     final teamAsync = ref.watch(employeeDirectReportsProvider(userId));
@@ -320,6 +261,12 @@ class _MyTeamTab extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  int? _getUserId(WidgetRef ref) {
+    final userIdStr = ref.watch(authProvider).userId;
+    if (userIdStr == null || userIdStr.isEmpty) return null;
+    return int.tryParse(userIdStr);
   }
 }
 
@@ -389,6 +336,8 @@ class _TeamMemberCard extends StatelessWidget {
         return 'Aktif';
       case 'inactive':
         return 'Pasif';
+      case 'terminated':
+        return 'İşten Çıkarıldı';
       case 'on_leave':
         return 'İzinde';
       default:
@@ -402,20 +351,9 @@ class _MyManagerTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    final userId = authState.userId;
-
-    if (userId == null || userId.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red),
-            SizedBox(height: 16),
-            Text('Kullanıcı bilgisi bulunamadı'),
-          ],
-        ),
-      );
+    final userId = _getUserId(ref);
+    if (userId == null) {
+      return const Center(child: Text('Kullanıcı bilgisi bulunamadı'));
     }
 
     final employeeAsync = ref.watch(employeeProvider(userId));
@@ -491,7 +429,7 @@ class _MyManagerTab extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${manager.firstName} ${manager.lastName}',
+                                manager.fullName,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -550,5 +488,11 @@ class _MyManagerTab extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  int? _getUserId(WidgetRef ref) {
+    final userIdStr = ref.watch(authProvider).userId;
+    if (userIdStr == null || userIdStr.isEmpty) return null;
+    return int.tryParse(userIdStr);
   }
 }

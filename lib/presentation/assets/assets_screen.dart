@@ -54,10 +54,15 @@ class _ActiveAssetsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userId = ref.watch(authProvider).userId;
+    final userIdStr = ref.watch(authProvider).userId;
 
-    if (userId == null) {
+    if (userIdStr == null) {
       return const Center(child: Text('Kullanıcı bilgisi bulunamadı'));
+    }
+
+    final userId = int.tryParse(userIdStr);
+    if (userId == null) {
+      return const Center(child: Text('Geçersiz kullanıcı ID'));
     }
 
     final assetsAsync = ref.watch(myActiveAssetsProvider(userId));
@@ -117,10 +122,15 @@ class _AssetHistoryTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userId = ref.watch(authProvider).userId;
+    final userIdStr = ref.watch(authProvider).userId;
 
-    if (userId == null) {
+    if (userIdStr == null) {
       return const Center(child: Text('Kullanıcı bilgisi bulunamadı'));
+    }
+
+    final userId = int.tryParse(userIdStr);
+    if (userId == null) {
+      return const Center(child: Text('Geçersiz kullanıcı ID'));
     }
 
     final historyAsync = ref.watch(myAllAssetsProvider(userId));
@@ -201,7 +211,7 @@ class _AssetCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    _assetIcon(asset?.category),
+                    _assetIcon(asset?.type),
                     size: 28,
                     color: Colors.blue.shade700,
                   ),
@@ -250,20 +260,20 @@ class _AssetCard extends StatelessWidget {
             if (showReturnDate)
               _InfoRow(
                 label: 'İade Tarihi',
-                value: assignment.returnDate != null
+                value: assignment.returnedDate != null
                     ? DateFormat(
                         'dd MMM yyyy',
                         'tr_TR',
-                      ).format(assignment.returnDate!)
+                      ).format(assignment.returnedDate!)
                     : '-',
               ),
-            if (asset?.warrantyEndDate != null)
+            if (asset?.warrantyExpires != null)
               _InfoRow(
                 label: 'Garanti Bitiş',
                 value: DateFormat(
                   'dd MMM yyyy',
                   'tr_TR',
-                ).format(asset!.warrantyEndDate!),
+                ).format(asset!.warrantyExpires!),
                 trailing: asset.isUnderWarranty
                     ? Container(
                         padding: const EdgeInsets.symmetric(

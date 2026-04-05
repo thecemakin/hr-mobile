@@ -13,10 +13,7 @@ final assetRepositoryProvider = Provider<AssetRepository>((ref) {
 });
 
 final myActiveAssetsProvider =
-    FutureProvider.family<List<AssetAssignment>, String>((
-      ref,
-      employeeId,
-    ) async {
+    FutureProvider.family<List<AssetAssignment>, int>((ref, employeeId) async {
       final repository = ref.watch(assetRepositoryProvider);
       return repository.getMyAssignments(
         employeeId: employeeId,
@@ -24,16 +21,15 @@ final myActiveAssetsProvider =
       );
     });
 
-final myAllAssetsProvider =
-    FutureProvider.family<List<AssetAssignment>, String>((
-      ref,
-      employeeId,
-    ) async {
-      final repository = ref.watch(assetRepositoryProvider);
-      return repository.getMyAssignments(employeeId: employeeId);
-    });
+final myAllAssetsProvider = FutureProvider.family<List<AssetAssignment>, int>((
+  ref,
+  employeeId,
+) async {
+  final repository = ref.watch(assetRepositoryProvider);
+  return repository.getMyAssignments(employeeId: employeeId);
+});
 
-final assetDetailProvider = FutureProvider.family<Asset, String>((
+final assetDetailProvider = FutureProvider.family<Asset, int>((
   ref,
   assetId,
 ) async {

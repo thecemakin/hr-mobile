@@ -7,7 +7,7 @@ class EmployeeService {
 
   EmployeeService({required this.dio});
 
-  Future<Employee> getEmployeeById(String id) async {
+  Future<Employee> getEmployeeById(int id) async {
     final response = await dio.get(
       '${AppConstants.apiV1}/corehr/employees/$id',
     );
@@ -15,8 +15,8 @@ class EmployeeService {
   }
 
   Future<List<Employee>> getEmployees({
-    String? managerId,
-    String? departmentId,
+    int? managerId,
+    int? departmentId,
     String? status,
     String? search,
   }) async {

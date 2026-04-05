@@ -7,13 +7,13 @@ class EmployeeRepository {
   EmployeeRepository({required EmployeeService employeeService})
     : _employeeService = employeeService;
 
-  Future<Employee> getEmployeeById(String id) {
+  Future<Employee> getEmployeeById(int id) {
     return _employeeService.getEmployeeById(id);
   }
 
   Future<List<Employee>> getEmployees({
-    String? managerId,
-    String? departmentId,
+    int? managerId,
+    int? departmentId,
     String? status,
     String? search,
   }) {
@@ -25,7 +25,7 @@ class EmployeeRepository {
     );
   }
 
-  Future<List<Employee>> getDirectReports(String managerId) {
+  Future<List<Employee>> getDirectReports(int managerId) {
     return _employeeService.getEmployees(managerId: managerId);
   }
 }

@@ -8,7 +8,7 @@ class AssetService {
   AssetService({required this.dio});
 
   Future<List<AssetAssignment>> getMyAssignments({
-    required String employeeId,
+    required int employeeId,
     String? status,
   }) async {
     final queryParameters = <String, dynamic>{'employee_id': employeeId};
@@ -36,7 +36,7 @@ class AssetService {
     return [];
   }
 
-  Future<Asset> getAssetById(String id) async {
+  Future<Asset> getAssetById(int id) async {
     final response = await dio.get('${AppConstants.apiV1}/corehr/assets/$id');
     return Asset.fromJson(response.data as Map<String, dynamic>);
   }
