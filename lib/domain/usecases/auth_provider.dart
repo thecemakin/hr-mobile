@@ -9,7 +9,8 @@ class AuthState {
   final String? refreshToken;
   final String? userId;
   final String? email;
-  final List<String> roles;
+  final String role;
+  final int? employeeId;
   final bool isAuthenticated;
 
   const AuthState({
@@ -17,7 +18,8 @@ class AuthState {
     this.refreshToken,
     this.userId,
     this.email,
-    this.roles = const [],
+    this.role = 'employee',
+    this.employeeId,
     this.isAuthenticated = false,
   });
 
@@ -26,7 +28,8 @@ class AuthState {
     String? refreshToken,
     String? userId,
     String? email,
-    List<String>? roles,
+    String? role,
+    int? employeeId,
     bool? isAuthenticated,
   }) {
     return AuthState(
@@ -34,10 +37,18 @@ class AuthState {
       refreshToken: refreshToken ?? this.refreshToken,
       userId: userId ?? this.userId,
       email: email ?? this.email,
-      roles: roles ?? this.roles,
+      role: role ?? this.role,
+      employeeId: employeeId ?? this.employeeId,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
     );
   }
+
+  bool get isAdmin => role.toLowerCase() == 'admin';
+  bool get isHR => role.toLowerCase() == 'hr';
+  bool get isManager => role.toLowerCase() == 'manager';
+  bool get isEmployee => role.toLowerCase() == 'employee';
+
+  List<String> get roles => [role];
 }
 
 final storageProvider = Provider<FlutterSecureStorage>((ref) {
@@ -72,29 +83,38 @@ class AuthNotifier extends Notifier<AuthState> {
         password: password,
       );
 
-      final accessToken = response['accessToken'] as String?;
-      final refreshToken = response['refreshToken'] as String?;
+      final token = response['token'] as String?;
       final user = response['user'] as Map<String, dynamic>?;
+      final role = (user?['role'] as String?)?.toLowerCase() ?? 'employee';
+      final userId = user?['id']?.toString();
+      final userEmail = user?['email'] as String?;
+      final employeeId = user?['employee_id'] != null
+          ? int.tryParse(user!['employee_id'].toString())
+          : null;
 
-      if (accessToken != null) {
+      if (token != null) {
+        await _storage.write(key: AppConstants.accessTokenKey, value: token);
+      }
+      if (userId != null) {
+        await _storage.write(key: AppConstants.userIdKey, value: userId);
+      }
+      if (userEmail != null) {
+        await _storage.write(key: AppConstants.userEmailKey, value: userEmail);
+      }
+      await _storage.write(key: AppConstants.userRoleKey, value: role);
+      if (employeeId != null) {
         await _storage.write(
-          key: AppConstants.accessTokenKey,
-          value: accessToken,
+          key: AppConstants.userEmployeeIdKey,
+          value: employeeId.toString(),
         );
       }
-      if (refreshToken != null) {
-        await _storage.write(
-          key: AppConstants.refreshTokenKey,
-          value: refreshToken,
-        );
-      }
 
-      state = state.copyWith(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        userId: user?['id']?.toString(),
-        email: user?['email']?.toString(),
-        roles: _parseRoles(user?['roles']),
+      state = AuthState(
+        accessToken: token,
+        userId: userId,
+        email: userEmail,
+        role: role,
+        employeeId: employeeId,
         isAuthenticated: true,
       );
     } catch (e) {
@@ -102,35 +122,31 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  List<String> _parseRoles(dynamic roles) {
-    if (roles == null) return [];
-    if (roles is List) {
-      return roles.map((e) => e.toString()).toList();
-    }
-    if (roles is String) {
-      return roles
-          .split(',')
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    }
-    return [];
-  }
-
   Future<void> logout() async {
     await _storage.delete(key: AppConstants.accessTokenKey);
-    await _storage.delete(key: AppConstants.refreshTokenKey);
+    await _storage.delete(key: AppConstants.userIdKey);
+    await _storage.delete(key: AppConstants.userEmailKey);
+    await _storage.delete(key: AppConstants.userRoleKey);
+    await _storage.delete(key: AppConstants.userEmployeeIdKey);
     state = const AuthState();
   }
 
   Future<void> checkAuthStatus() async {
-    final accessToken = await _storage.read(key: AppConstants.accessTokenKey);
-    final refreshToken = await _storage.read(key: AppConstants.refreshTokenKey);
+    final token = await _storage.read(key: AppConstants.accessTokenKey);
+    final userId = await _storage.read(key: AppConstants.userIdKey);
+    final email = await _storage.read(key: AppConstants.userEmailKey);
+    final role = await _storage.read(key: AppConstants.userRoleKey);
+    final employeeIdStr = await _storage.read(
+      key: AppConstants.userEmployeeIdKey,
+    );
 
-    if (accessToken != null) {
-      state = state.copyWith(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
+    if (token != null) {
+      state = AuthState(
+        accessToken: token,
+        userId: userId,
+        email: email,
+        role: role?.toLowerCase() ?? 'employee',
+        employeeId: employeeIdStr != null ? int.tryParse(employeeIdStr) : null,
         isAuthenticated: true,
       );
     }

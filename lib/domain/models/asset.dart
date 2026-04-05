@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'employee.dart';
 
 class Asset extends Equatable {
   final int id;
@@ -118,6 +119,9 @@ class AssetAssignment extends Equatable {
   final int? assignedBy;
   final int? returnedBy;
   final Asset? asset;
+  final Employee? employee;
+  final Employee? assigner;
+  final Employee? returner;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -132,6 +136,9 @@ class AssetAssignment extends Equatable {
     this.assignedBy,
     this.returnedBy,
     this.asset,
+    this.employee,
+    this.assigner,
+    this.returner,
     this.createdAt,
     this.updatedAt,
   });
@@ -150,6 +157,15 @@ class AssetAssignment extends Equatable {
       asset: json['asset'] != null
           ? Asset.fromJson(json['asset'] as Map<String, dynamic>)
           : null,
+      employee: json['employee'] != null
+          ? Employee.fromJson(json['employee'] as Map<String, dynamic>)
+          : null,
+      assigner: json['assigner'] != null
+          ? Employee.fromJson(json['assigner'] as Map<String, dynamic>)
+          : null,
+      returner: json['returner'] != null
+          ? Employee.fromJson(json['returner'] as Map<String, dynamic>)
+          : null,
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
     );
@@ -167,6 +183,9 @@ class AssetAssignment extends Equatable {
       'assigned_by': assignedBy,
       'returned_by': returnedBy,
       'asset': asset?.toJson(),
+      'employee': employee?.toJson(),
+      'assigner': assigner?.toJson(),
+      'returner': returner?.toJson(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };

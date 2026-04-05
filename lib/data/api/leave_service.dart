@@ -92,7 +92,7 @@ class LeaveService {
         'leave_type_id': leaveTypeId,
         'start_date': startDate.toIso8601String(),
         'end_date': endDate.toIso8601String(),
-        if (reason != null) 'reason': reason,
+        'reason': reason,
       },
     );
 

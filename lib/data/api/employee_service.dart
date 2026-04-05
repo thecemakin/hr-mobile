@@ -19,12 +19,16 @@ class EmployeeService {
     int? departmentId,
     String? status,
     String? search,
+    String? email,
+    int limit = 50,
+    int offset = 0,
   }) async {
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{'limit': limit, 'offset': offset};
     if (managerId != null) queryParameters['manager_id'] = managerId;
     if (departmentId != null) queryParameters['department_id'] = departmentId;
     if (status != null) queryParameters['status'] = status;
     if (search != null) queryParameters['search'] = search;
+    if (email != null) queryParameters['email'] = email;
 
     final response = await dio.get(
       '${AppConstants.apiV1}/corehr/employees',

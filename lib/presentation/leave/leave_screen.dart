@@ -823,10 +823,10 @@ class _ApprovalCardState extends ConsumerState<_ApprovalCard> {
               Navigator.pop(context);
               _reject(controller.text);
             },
-            child: const Text('Reddet'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade700,
             ),
+            child: const Text('Reddet'),
           ),
         ],
       ),

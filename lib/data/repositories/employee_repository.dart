@@ -16,12 +16,18 @@ class EmployeeRepository {
     int? departmentId,
     String? status,
     String? search,
+    String? email,
+    int limit = 50,
+    int offset = 0,
   }) {
     return _employeeService.getEmployees(
       managerId: managerId,
       departmentId: departmentId,
       status: status,
       search: search,
+      email: email,
+      limit: limit,
+      offset: offset,
     );
   }
 

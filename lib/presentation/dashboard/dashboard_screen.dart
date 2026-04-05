@@ -9,6 +9,8 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
+    final isHrOrAdmin = authState.isHR || authState.isAdmin;
+    final isManager = authState.isManager;
 
     return Scaffold(
       appBar: AppBar(
@@ -84,6 +86,12 @@ class DashboardScreen extends ConsumerWidget {
                     label: 'Profilim',
                     route: '/employees',
                   ),
+                  if (isHrOrAdmin)
+                    _QuickAccessCard(
+                      icon: Icons.people_outline,
+                      label: 'Çalışanlar',
+                      route: '/employee-directory',
+                    ),
                   _QuickAccessCard(
                     icon: Icons.beach_access_outlined,
                     label: 'İzinlerim',
@@ -99,6 +107,24 @@ class DashboardScreen extends ConsumerWidget {
                     label: 'Zimmetlerim',
                     route: '/assets',
                   ),
+                  if (isHrOrAdmin)
+                    _QuickAccessCard(
+                      icon: Icons.business_outlined,
+                      label: 'Departmanlar',
+                      route: '/departments',
+                    ),
+                  if (isHrOrAdmin)
+                    _QuickAccessCard(
+                      icon: Icons.badge_outlined,
+                      label: 'Pozisyonlar',
+                      route: '/positions',
+                    ),
+                  if (isManager || isHrOrAdmin)
+                    _QuickAccessCard(
+                      icon: Icons.approval_outlined,
+                      label: 'Onaylar',
+                      route: '/leave',
+                    ),
                 ],
               ),
             ),
